@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import momentTimezone from 'moment-timezone';
 import { HttpClientUtil, BearerStrategy } from '../../expressium/src/index.js';
-import { IAlarmMap, IChannelAlarmMap, IEventPayloadMap, INetworkMap, IReqBody, IResponse, IResponseData } from './interfaces/index.js';
+import { IAccountMap, IAlarmMap, IChannelAlarmMap, IEventPayloadMap, INetworkMap, IPartitionMap, IReqBody, IResponse, IResponseData } from './interfaces/index.js';
 
 const EVENT_ID = '167616000';
 const PROTOCOL_TYPE = 'CONTACT_ID';
@@ -34,8 +34,17 @@ const processChannelAlarmList = async (
   networkMap: INetworkMap.INetworkMap, 
   deviceNamePartList: string[]
 ): Promise<void> => {
-  const eventPayloadMapList: IEventPayloadMap.IEventPayloadMap[] = [];
+  const httpClientInstance = new HttpClientUtil.HttpClient();
+
+  httpClientInstance.setAuthenticationStrategy(new BearerStrategy.BearerStrategy(process.env.SIGMA_CLOUD_BEARER_TOKEN as string));
   
+  const accountMap = (await httpClientInstance.get<IAccountMap.IAccountMap>(`https://api.segware.com.br/v5/accounts/${ deviceNamePartList[0] }`)).data;
+  const partitionMap = accountMap?.partitions.find((partitionMap: IPartitionMap.IPartitionMap): boolean => String(partitionMap.id) === deviceNamePartList[1]);
+  const eventPayloadMapList: IEventPayloadMap.IEventPayloadMap[] = [];
+  const account = accountMap ? accountMap.accountCode : deviceNamePartList[1];
+  const companyId = accountMap ? accountMap.companyId : deviceNamePartList[0];
+  const partition = partitionMap ? partitionMap.number : deviceNamePartList[2];
+
   alarmMap.channel_alarm.forEach(
     (channelAlarmMap: IChannelAlarmMap.IChannelAlarmMap): void => {
       const code = getAlarmCode(channelAlarmMap);
@@ -43,15 +52,14 @@ const processChannelAlarmList = async (
       if (code) {
         eventPayloadMapList.push(
           {
-            account: deviceNamePartList[1],
+            account,
             auxiliary: channelAlarmMap.channel,
             code,
-            companyId: deviceNamePartList[0],
+            companyId,
             complement: `Fabricante: Gabriel, IP: ${ networkMap.ip }, MAC: ${ networkMap.mac }, Descrição do Host: ${ channelAlarmMap.chn_alias }`,
             eventId: EVENT_ID,
             eventLog: `Fabricante: Gabriel, IP: ${ networkMap.ip }, MAC: ${ networkMap.mac }, Descrição do Host: ${ channelAlarmMap.chn_alias }`,
-            dateTime: alarmMap.time.split('Z')[0].replace('T', ' '),
-            partition: deviceNamePartList[2],
+            partition,
             protocolType: PROTOCOL_TYPE
           }
         );
@@ -60,10 +68,6 @@ const processChannelAlarmList = async (
   );
 
   if (eventPayloadMapList.length > 0) {
-    const httpClientInstance = new HttpClientUtil.HttpClient();
-
-    httpClientInstance.setAuthenticationStrategy(new BearerStrategy.BearerStrategy(process.env.SIGMA_CLOUD_BEARER_TOKEN as string));
-  
     await httpClientInstance.post<unknown>('https://api.segware.com.br/v3/events/alarm', { events: eventPayloadMapList });
   }
 };
