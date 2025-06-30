@@ -1,7 +1,9 @@
+export * as IAccountMap from './IAccountMap.js';
 export * as IAlarmMap from './IAlarmMap.js';
 export * as IChannelAlarmMap from './IChannelAlarmMap.js';
 export * as IEventPayloadMap from './IEventPayloadMap.js';
 export * as INetworkMap from './INetworkMap.js';
+export * as IPartitionMap from './IPartitionMap.js';
 export * as IReqBody from './IReqBody.js';
 export * as IResponse from './IResponse.js';
 export * as IResponseData from './IResponseData.js';

@@ -6,7 +6,6 @@ export interface IEventPayloadMap {
   complement: string;
   eventId: string;
   eventLog: string;
-  dateTime: string;
   partition: string;
   protocolType: string;
 }
