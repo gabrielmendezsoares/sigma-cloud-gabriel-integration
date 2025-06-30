@@ -56,9 +56,9 @@ const processChannelAlarmList = async (
             auxiliary: channelAlarmMap.channel,
             code,
             companyId,
-            complement: `Fabricante: Gabriel, IP: ${ networkMap.ip }, MAC: ${ networkMap.mac }, Descrição do Host: ${ channelAlarmMap.chn_alias }`,
+            complement: `Fabricante: Gabriel, IP: ${ networkMap.ip }, MAC: ${ networkMap.mac }, Descrição: ${ channelAlarmMap.chn_alias }`,
             eventId: EVENT_ID,
-            eventLog: `Fabricante: Gabriel, IP: ${ networkMap.ip }, MAC: ${ networkMap.mac }, Descrição do Host: ${ channelAlarmMap.chn_alias }`,
+            eventLog: `Fabricante: Gabriel, IP: ${ networkMap.ip }, MAC: ${ networkMap.mac }, Descrição: ${ channelAlarmMap.chn_alias }`,
             partition,
             protocolType: PROTOCOL_TYPE
           }
