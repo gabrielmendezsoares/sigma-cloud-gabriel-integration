@@ -14,16 +14,12 @@ const CODE_MAP = {
 const getAlarmCode = (channelAlarmMap: IChannelAlarmMap.IChannelAlarmMap): string | null => {
   if (channelAlarmMap.motion_alarm && Object.hasOwn(CODE_MAP, "motion_alarm")) {
     return CODE_MAP['motion_alarm' as keyof typeof CODE_MAP];
-  } else if (channelAlarmMap.motion_alarm !== undefined) {
-    console.log(`Error | Timestamp: ${ momentTimezone().utc().format('DD-MM-YYYY HH:mm:ss') } | Path: src/services/createSigmaCloudEvents.service.ts | Location: getAlarmCode | Error: Event code not registered for motion_alarm`);
   }
   
   const intSubtype = channelAlarmMap.int_alarm?.int_subtype;
 
   if (intSubtype && Object.hasOwn(CODE_MAP, intSubtype)) {
     return CODE_MAP[intSubtype as keyof typeof CODE_MAP];
-  } else if (intSubtype !== undefined) {
-    console.log(`Error | Timestamp: ${ momentTimezone().utc().format('DD-MM-YYYY HH:mm:ss') } | Path: src/services/createSigmaCloudEvents.service.ts | Location: getAlarmCode | Error: Event code not registered for ${ intSubtype }`);
   }
   
   return null;
@@ -40,10 +36,17 @@ const processChannelAlarmList = async (
   
   const accountMap = (await httpClientInstance.get<IAccountMap.IAccountMap>(`https://api.segware.com.br/v5/accounts/${ deviceNamePartList[0] }`)).data;
   const partitionMap = accountMap?.partitions.find((partitionMap: IPartitionMap.IPartitionMap): boolean => String(partitionMap.id) === deviceNamePartList[1]);
-  const eventPayloadMapList: IEventPayloadMap.IEventPayloadMap[] = [];
   const account = accountMap ? accountMap.accountCode : deviceNamePartList[1];
-  const companyId = accountMap ? accountMap.companyId : deviceNamePartList[0];
+  const companyId = accountMap ? accountMap.companyId : Number(deviceNamePartList[0]);
   const partition = partitionMap ? partitionMap.number : deviceNamePartList[2];
+
+  if (!account || !companyId || !partition) {
+    console.log(`Error | Timestamp: ${ momentTimezone().utc().format('DD-MM-YYYY HH:mm:ss') } | Path: src/services/createSigmaCloudEvents.service.ts | Location: processChannelAlarmList | Error: Invalid account, companyId or partition.`);
+    
+    return;
+  }
+
+  const eventPayloadMapList: IEventPayloadMap.IEventPayloadMap[] = [];
 
   alarmMap.channel_alarm.forEach(
     (channelAlarmMap: IChannelAlarmMap.IChannelAlarmMap): void => {
