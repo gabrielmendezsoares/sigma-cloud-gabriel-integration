@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import momentTimezone from 'moment-timezone';
 import { HttpClientUtil, BearerStrategy } from '../../expressium/src/index.js';
-import { IAccountMap, IAlarmMap, IChannelAlarmMap, IEventPayloadMap, INetworkMap, IPartitionMap, IReqBody, IResponse, IResponseData } from './interfaces/index.js';
+import { IAccountMap, IAlarmMap, IChannelAlarmMap, ICodeMap, IEventPayloadMap, INetworkMap, IPartitionMap, IReqBody, IResponse, IResponseData } from './interfaces/index.js';
 
 const EVENT_ID = '167616000';
 const PROTOCOL_TYPE = 'CONTACT_ID';
@@ -11,15 +11,21 @@ const CODE_MAP = {
   pid: 'E602'
 };
 
-const getAlarmCode = (channelAlarmMap: IChannelAlarmMap.IChannelAlarmMap): string | null => {
+const getCodeMap = (channelAlarmMap: IChannelAlarmMap.IChannelAlarmMap): ICodeMap.ICodeMap | null => {
   if (channelAlarmMap.motion_alarm && Object.hasOwn(CODE_MAP, "motion_alarm")) {
-    return CODE_MAP['motion_alarm' as keyof typeof CODE_MAP];
+    return {
+      type: 'motion_alarm',
+      code: CODE_MAP['motion_alarm' as keyof typeof CODE_MAP]
+    };
   }
   
   const intSubtype = channelAlarmMap.int_alarm?.int_subtype;
 
   if (intSubtype && Object.hasOwn(CODE_MAP, intSubtype)) {
-    return CODE_MAP[intSubtype as keyof typeof CODE_MAP];
+    return {
+      type: intSubtype,
+      code: CODE_MAP[intSubtype as keyof typeof CODE_MAP]
+    };
   }
   
   return null;
@@ -50,18 +56,18 @@ const processChannelAlarmList = async (
 
   alarmMap.channel_alarm.forEach(
     (channelAlarmMap: IChannelAlarmMap.IChannelAlarmMap): void => {
-      const code = getAlarmCode(channelAlarmMap);
+      const codeMap = getCodeMap(channelAlarmMap);
 
-      if (code) {
+      if (codeMap) {
         eventPayloadMapList.push(
           {
             account,
             auxiliary: channelAlarmMap.channel,
-            code,
+            code: codeMap.code,
             companyId,
-            complement: `Fabricante: Gabriel, IP: ${ networkMap.ip }, MAC: ${ networkMap.mac }, Local: ${ channelAlarmMap.chn_alias }`,
+            complement: `Fabricante: Gabriel, Tipo: ${ codeMap.type }, IP: ${ networkMap.ip }, MAC: ${ networkMap.mac }, Local: ${ channelAlarmMap.chn_alias }`,
             eventId: EVENT_ID,
-            eventLog: `Fabricante: Gabriel, IP: ${ networkMap.ip }, MAC: ${ networkMap.mac }, Local: ${ channelAlarmMap.chn_alias }`,
+            eventLog: `Fabricante: Gabriel, Tipo: ${ codeMap.type }, IP: ${ networkMap.ip }, MAC: ${ networkMap.mac }, Local: ${ channelAlarmMap.chn_alias }`,
             partition,
             protocolType: PROTOCOL_TYPE
           }
