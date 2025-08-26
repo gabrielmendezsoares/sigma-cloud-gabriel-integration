@@ -8,7 +8,7 @@ x-common-variables: &common-variables
 services:
   main-development:
     <<: *common-variables
-    container_name: main-development-sigma-cloud-gabriel-íntegration
+    container_name: main-development-sigma-cloud-gabriel-integration
     build:
       context: .
       dockerfile: Dockerfile
@@ -24,7 +24,7 @@ services:
       
   main-production:
     <<: *common-variables
-    container_name: main-production-sigma-cloud-gabriel-íntegration
+    container_name: main-production-sigma-cloud-gabriel-integration
     build:
       context: .
       dockerfile: Dockerfile
@@ -37,7 +37,7 @@ services:
 
   db:
     <<: *common-variables
-    container_name: db-mysql-sigma-cloud-gabriel-íntegration
+    container_name: db-mysql-sigma-cloud-gabriel-integration
     image: mysql:8.0
     ports:
       - "4406:3306"
