@@ -304,7 +304,8 @@ paths:
                     channel: 2
                 device_name: "123_456_789"
                 dev_net_info:
-                  - ip: "
+                   - ip: "192.168.1.100"
+                     mac: "00:1A:2B:3C:4D:5E"
       responses:
         '200':
           description: Successfully processed all alarm events.
