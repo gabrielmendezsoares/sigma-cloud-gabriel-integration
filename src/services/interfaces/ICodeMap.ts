@@ -1,4 +1,4 @@
 export interface ICodeMap {
-  type: string;
   code: string;
+  type: string;
 }
