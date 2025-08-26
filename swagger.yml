@@ -287,8 +287,6 @@ paths:
         Receives alarm events triggered by Gabriel devices, enriches the payload with contextual data
         (account, partition, network, etc.), and forwards it to the Sigma Cloud Events API. The system logs
         success or failure of each event in a local database for traceability and audit.
-      security:
-        - Bearer: []
       requestBody:
         required: true
         content:
