@@ -8,7 +8,7 @@ const PROTOCOL_TYPE = 'CONTACT_ID';
 
 const EVENT_CODE_MAP = {
   lcd: 'E130',
-  pid: 'E602'
+  pid: 'E130'
 } as const;
 
 const prisma = new PrismaClient();
