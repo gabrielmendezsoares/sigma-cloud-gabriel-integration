@@ -144,13 +144,23 @@ export const createSigmaCloudEvents = async (req: Request): Promise<IResponse.IR
     };
   }
 
+  if (!body?.data?.device_name) {
+    return {
+      status: 400,
+      data: {
+        message: 'Invalid request body.',
+        suggestion: 'Please ensure the request body contains a valid "data.device_name" field.'
+      }
+    };
+  }
+
   if (!alarmMapList.length) {
     return {
       status: 200,
       data: 'OK'
     };
   }
-
+  
   await Promise.allSettled(alarmMapList.map((alarmMap: IAlarmMap.IAlarmMap): Promise<void> => processAlarmMap(body.data.device_name.split('_'), alarmMap, body.data.dev_net_info[0])));
 
   return {
